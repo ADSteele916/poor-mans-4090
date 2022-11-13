@@ -1,14 +1,16 @@
 use clap::Parser;
-use image::{Rgb, RgbImage};
+use image::RgbImage;
+use indicatif::ParallelProgressIterator;
 use nalgebra::Vector3;
+use rayon::prelude::*;
 use std::path::PathBuf;
 
-fn vector_to_rgb(colour: &Vector3<f64>) -> Rgb<u8> {
-    Rgb([
+fn vector_to_rgb(colour: &Vector3<f64>) -> [u8; 3] {
+    [
         (colour.x * 255.0) as u8,
         (colour.y * 255.0) as u8,
         (colour.z * 255.0) as u8,
-    ])
+    ]
 }
 
 #[derive(Parser)]
@@ -21,23 +23,24 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let image_width = 255;
-    let image_height = 255;
+    let image_width: u32 = 255;
+    let image_height: u32 = 255;
 
-    let mut img = RgbImage::new(image_width, image_height);
-
-    for j in 0..image_height {
-        eprint!("\rScanlines remaining: {} ", (image_height - j));
-        for i in 0..image_width {
-            let r = (i as f64) / (image_width - 1) as f64;
-            let g = (image_height - j) as f64 / (image_height - 1) as f64;
+    let buffer: Vec<u8> = (0..image_height)
+        .flat_map(|j| (0..image_width).map(move |i| (i, j)))
+        .collect::<Vec<(_, _)>>()
+        .into_par_iter()
+        .progress()
+        .flat_map(|(x, y)| {
+            let r = (x as f64) / (image_width - 1) as f64;
+            let g = (image_height - y) as f64 / (image_height - 1) as f64;
             let b = 0.25;
             let colour = Vector3::new(r, g, b);
 
-            img.put_pixel(i, j, vector_to_rgb(&colour));
-        }
-    }
-    eprintln!("\rDone!");
+            vector_to_rgb(&colour)
+        })
+        .collect();
+    let img = RgbImage::from_raw(image_width, image_height, buffer).unwrap();
 
     img.save(args.path).unwrap();
 }
