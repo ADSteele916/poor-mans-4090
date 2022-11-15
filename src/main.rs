@@ -4,22 +4,21 @@ mod hittable_list;
 mod material;
 mod random;
 mod ray;
+mod scenes;
 mod sphere;
 
 use crate::camera::Camera;
 use crate::hittable::Hittable;
 use crate::hittable_list::HittableList;
-use crate::material::{Dielectric, Lambertian, Metal};
 use crate::random::random_double;
 use crate::ray::Ray;
-use crate::sphere::Sphere;
+use crate::scenes::random_scene;
 use clap::Parser;
 use image::RgbImage;
 use indicatif::ParallelProgressIterator;
 use nalgebra::{vector, Vector3};
 use rayon::prelude::*;
 use std::path::PathBuf;
-use std::sync::Arc;
 
 fn ray_colour(r: &Ray, world: &HittableList, depth: i32) -> Vector3<f64> {
     if depth <= 0 {
@@ -59,54 +58,23 @@ fn main() {
 
     // Image
 
-    let aspect_ratio = 16.0 / 9.0;
-    let image_width = 400;
+    let aspect_ratio = 3.0 / 2.0;
+    let image_width = 1200;
     let image_height = ((image_width as f64) / aspect_ratio) as u32;
-    let samples_per_pixel = 100;
+    let samples_per_pixel = 500;
     let max_depth = 50;
 
     // World
 
-    let mut world = HittableList::default();
-
-    let material_ground = Arc::new(Lambertian::new(vector![0.8, 0.8, 0.0]));
-    let material_center = Arc::new(Lambertian::new(vector![0.1, 0.2, 0.5]));
-    let material_left = Arc::new(Dielectric::new(1.5));
-    let material_right = Arc::new(Metal::new(vector![0.8, 0.6, 0.2], 0.0));
-
-    world.add(Arc::new(Sphere::new(
-        vector![0.0, -100.5, -1.0],
-        100.0,
-        material_ground,
-    )));
-    world.add(Arc::new(Sphere::new(
-        vector![0.0, 0.0, -1.0],
-        0.5,
-        material_center,
-    )));
-    world.add(Arc::new(Sphere::new(
-        vector![-1.0, 0.0, -1.0],
-        0.5,
-        material_left.clone(),
-    )));
-    world.add(Arc::new(Sphere::new(
-        vector![-1.0, 0.0, -1.0],
-        -0.45,
-        material_left,
-    )));
-    world.add(Arc::new(Sphere::new(
-        vector![1.0, 0.0, -1.0],
-        0.5,
-        material_right,
-    )));
+    let world = random_scene();
 
     // Camera
 
-    let lookfrom = vector![3.0, 3.0, 2.0];
-    let lookat = vector![0.0, 0.0, -1.0];
+    let lookfrom = vector![13.0, 2.0, 3.0];
+    let lookat = vector![0.0, 0.0, 0.0];
     let vup = vector![0.0, 1.0, 0.0];
-    let dist_to_focus = (lookfrom - lookat).norm();
-    let aperture = 2.0;
+    let dist_to_focus = 10.0;
+    let aperture = 0.1;
 
     let cam = Camera::new(
         lookfrom,
