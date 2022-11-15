@@ -99,7 +99,13 @@ fn main() {
     )));
 
     // Camera
-    let cam = Camera::new();
+    let cam = Camera::new(
+        vector![-2.0, 2.0, 1.0],
+        vector![0.0, 0.0, -1.0],
+        vector![0.0, 1.0, 0.0],
+        20.0,
+        aspect_ratio,
+    );
 
     let buffer: Vec<u8> = (0..image_height)
         .flat_map(|j| (0..image_width).map(move |i| (i, j)))
