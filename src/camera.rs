@@ -1,11 +1,15 @@
+use crate::random::random_in_unit_disk;
 use crate::ray::Ray;
-use nalgebra::{vector, Vector3};
+use nalgebra::Vector3;
 
 pub struct Camera {
     origin: Vector3<f64>,
     upper_left_corner: Vector3<f64>,
     horizontal: Vector3<f64>,
     vertical: Vector3<f64>,
+    u: Vector3<f64>,
+    v: Vector3<f64>,
+    lens_radius: f64,
 }
 
 impl Camera {
@@ -15,6 +19,8 @@ impl Camera {
         vup: Vector3<f64>,
         vfov: f64,
         aspect_ratio: f64,
+        aperture: f64,
+        focus_dist: f64,
     ) -> Self {
         let theta = vfov.to_radians();
         let h = (theta / 2.0).tan();
@@ -26,22 +32,30 @@ impl Camera {
         let v = w.cross(&u);
 
         let origin = lookfrom;
-        let horizontal = viewport_width * u;
-        let vertical = viewport_height * v;
-        let upper_left_corner = origin - horizontal / 2.0 + vertical / 2.0 - w;
+        let horizontal = focus_dist * viewport_width * u;
+        let vertical = focus_dist * viewport_height * v;
+        let upper_left_corner = origin - horizontal / 2.0 + vertical / 2.0 - focus_dist * w;
+
+        let lens_radius = aperture / 2.0;
 
         Self {
             origin,
             upper_left_corner,
             horizontal,
             vertical,
+            u,
+            v,
+            lens_radius,
         }
     }
 
     pub fn get_ray(&self, s: f64, t: f64) -> Ray {
+        let rd = self.lens_radius * random_in_unit_disk();
+        let offset = self.u * rd.x + self.v * rd.y;
+
         Ray::new(
-            self.origin,
-            self.upper_left_corner + s * self.horizontal - t * self.vertical - self.origin,
+            self.origin + offset,
+            self.upper_left_corner + s * self.horizontal - t * self.vertical - self.origin - offset,
         )
     }
 }

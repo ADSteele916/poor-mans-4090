@@ -58,6 +58,7 @@ fn main() {
     let args = Args::parse();
 
     // Image
+
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 400;
     let image_height = ((image_width as f64) / aspect_ratio) as u32;
@@ -65,6 +66,7 @@ fn main() {
     let max_depth = 50;
 
     // World
+
     let mut world = HittableList::default();
 
     let material_ground = Arc::new(Lambertian::new(vector![0.8, 0.8, 0.0]));
@@ -99,13 +101,24 @@ fn main() {
     )));
 
     // Camera
+
+    let lookfrom = vector![3.0, 3.0, 2.0];
+    let lookat = vector![0.0, 0.0, -1.0];
+    let vup = vector![0.0, 1.0, 0.0];
+    let dist_to_focus = (lookfrom - lookat).norm();
+    let aperture = 2.0;
+
     let cam = Camera::new(
-        vector![-2.0, 2.0, 1.0],
-        vector![0.0, 0.0, -1.0],
-        vector![0.0, 1.0, 0.0],
+        lookfrom,
+        lookat,
+        vup,
         20.0,
         aspect_ratio,
+        aperture,
+        dist_to_focus,
     );
+
+    // Render
 
     let buffer: Vec<u8> = (0..image_height)
         .flat_map(|j| (0..image_width).map(move |i| (i, j)))
