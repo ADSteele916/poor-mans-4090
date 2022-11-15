@@ -20,8 +20,8 @@ impl Hittable for HittableList {
 
         for object in &self.objects {
             if let Some(hit) = object.hit(r, t_min, closest_so_far) {
-                rec = Some(hit);
                 closest_so_far = hit.t();
+                rec = Some(hit);
             }
         }
 
