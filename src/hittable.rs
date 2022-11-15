@@ -20,6 +20,10 @@ impl HitRecord {
         }
     }
 
+    pub fn point(&self) -> &Vector3<f64> {
+        &self.point
+    }
+
     pub fn normal(&self) -> &Vector3<f64> {
         &self.normal
     }
