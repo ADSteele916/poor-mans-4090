@@ -1,7 +1,7 @@
-use std::sync::Arc;
+use crate::material::Material;
 use crate::ray::Ray;
 use nalgebra::Vector3;
-use crate::material::Material;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct HitRecord {
@@ -13,7 +13,13 @@ pub struct HitRecord {
 }
 
 impl HitRecord {
-    pub fn new(point: Vector3<f64>, normal: Vector3<f64>, material: Arc<dyn Material>, t: f64, r: &Ray) -> Self {
+    pub fn new(
+        point: Vector3<f64>,
+        normal: Vector3<f64>,
+        material: Arc<dyn Material>,
+        t: f64,
+        r: &Ray,
+    ) -> Self {
         let front_face = r.direction.dot(&normal) < 0.0;
         Self {
             point,
@@ -38,6 +44,10 @@ impl HitRecord {
 
     pub fn t(&self) -> f64 {
         self.t
+    }
+
+    pub fn front_face(&self) -> bool {
+        self.front_face
     }
 }
 

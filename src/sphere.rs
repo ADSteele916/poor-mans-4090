@@ -1,8 +1,8 @@
-use std::sync::Arc;
 use crate::hittable::{HitRecord, Hittable};
+use crate::material::Material;
 use crate::ray::Ray;
 use nalgebra::Vector3;
-use crate::material::Material;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Sphere {
@@ -13,7 +13,11 @@ pub struct Sphere {
 
 impl Sphere {
     pub fn new(center: Vector3<f64>, radius: f64, material: Arc<dyn Material>) -> Self {
-        Self { center, radius, material }
+        Self {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
