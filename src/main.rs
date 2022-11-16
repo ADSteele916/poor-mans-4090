@@ -2,6 +2,7 @@ mod camera;
 mod hittable;
 mod hittable_list;
 mod material;
+mod moving_sphere;
 mod random;
 mod ray;
 mod scenes;
@@ -58,11 +59,10 @@ fn main() {
 
     // Image
 
-    let aspect_ratio = 3.0 / 2.0;
-    let image_width = 1200;
-    let image_height = ((image_width as f64) / aspect_ratio) as u32;
-    let samples_per_pixel = 500;
-    let max_depth = 50;
+    let aspect_ratio = 16.0 / 9.0;
+    let image_width = 400;
+    let samples_per_pixel = 100;
+    let max_depth = 100;
 
     // World
 
@@ -75,6 +75,7 @@ fn main() {
     let vup = vector![0.0, 1.0, 0.0];
     let dist_to_focus = 10.0;
     let aperture = 0.1;
+    let image_height = ((image_width as f64) / aspect_ratio) as u32;
 
     let cam = Camera::new(
         lookfrom,
@@ -84,6 +85,8 @@ fn main() {
         aspect_ratio,
         aperture,
         dist_to_focus,
+        0.0,
+        1.0,
     );
 
     // Render

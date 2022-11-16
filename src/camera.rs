@@ -1,4 +1,4 @@
-use crate::random::random_in_unit_disk;
+use crate::random::{random_in_unit_disk, random_range_double};
 use crate::ray::Ray;
 use nalgebra::Vector3;
 
@@ -10,9 +10,12 @@ pub struct Camera {
     u: Vector3<f64>,
     v: Vector3<f64>,
     lens_radius: f64,
+    time0: f64,
+    time1: f64,
 }
 
 impl Camera {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         lookfrom: Vector3<f64>,
         lookat: Vector3<f64>,
@@ -21,6 +24,8 @@ impl Camera {
         aspect_ratio: f64,
         aperture: f64,
         focus_dist: f64,
+        time0: f64,
+        time1: f64,
     ) -> Self {
         let theta = vfov.to_radians();
         let h = (theta / 2.0).tan();
@@ -46,6 +51,8 @@ impl Camera {
             u,
             v,
             lens_radius,
+            time0,
+            time1,
         }
     }
 
@@ -56,6 +63,7 @@ impl Camera {
         Ray::new(
             self.origin + offset,
             self.upper_left_corner + s * self.horizontal - t * self.vertical - self.origin - offset,
+            random_range_double(self.time0, self.time1),
         )
     }
 }
