@@ -3,7 +3,7 @@ use crate::material::{Dielectric, Lambertian, Metal};
 use crate::moving_sphere::MovingSphere;
 use crate::random::{random_double, random_range_double, random_range_vector3, random_vector3};
 use crate::sphere::Sphere;
-use crate::texture::CheckerTexture;
+use crate::texture::{CheckerTexture, NoiseTexture};
 use nalgebra::vector;
 use std::sync::Arc;
 
@@ -97,6 +97,21 @@ pub fn two_spheres() -> HittableList {
         10.0,
         Arc::new(Lambertian::new_from_texture(checker)),
     )));
+
+    objects
+}
+
+pub fn two_perlin_spheres() -> HittableList {
+    let mut objects = HittableList::default();
+
+    let pertext = Arc::new(NoiseTexture::new(4.0));
+    let permat = Arc::new(Lambertian::new_from_texture(pertext));
+    objects.add(Arc::new(Sphere::new(
+        vector![0.0, -1000.0, 0.0],
+        1000.0,
+        permat.clone(),
+    )));
+    objects.add(Arc::new(Sphere::new(vector![0.0, 2.0, 0.0], 2.0, permat)));
 
     objects
 }
