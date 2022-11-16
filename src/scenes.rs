@@ -1,5 +1,6 @@
+use crate::aarect::{XYRect, XZRect, YZRect};
 use crate::hittable_list::HittableList;
-use crate::material::{Dielectric, Lambertian, Metal};
+use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal};
 use crate::moving_sphere::MovingSphere;
 use crate::random::{random_double, random_range_double, random_range_vector3, random_vector3};
 use crate::sphere::Sphere;
@@ -123,4 +124,56 @@ pub fn earth() -> HittableList {
     let globe = Arc::new(Sphere::new(vector![0.0, 0.0, 0.0], 2.0, earth_surface));
 
     HittableList::new(globe)
+}
+
+pub fn simple_light() -> HittableList {
+    let mut objects = HittableList::default();
+
+    let pertext = Arc::new(NoiseTexture::new(4.0));
+    let permat = Arc::new(Lambertian::new_from_texture(pertext));
+    objects.add(Arc::new(Sphere::new(
+        vector![0.0, -1000.0, 0.0],
+        1000.0,
+        permat.clone(),
+    )));
+    objects.add(Arc::new(Sphere::new(vector![0.0, 2.0, 0.0], 2.0, permat)));
+
+    let difflight = Arc::new(DiffuseLight::new(vector![4.0, 4.0, 4.0]));
+    objects.add(Arc::new(XYRect::new(3.0, 5.0, 1.0, 3.0, -2.0, difflight)));
+
+    objects
+}
+
+pub fn cornell_box() -> HittableList {
+    let mut objects = HittableList::default();
+
+    let red = Arc::new(Lambertian::new(vector![0.65, 0.05, 0.05]));
+    let white = Arc::new(Lambertian::new(vector![0.73, 0.73, 0.73]));
+    let green = Arc::new(Lambertian::new(vector![0.12, 0.45, 0.15]));
+    let light = Arc::new(DiffuseLight::new(vector![15.0, 15.0, 15.0]));
+
+    objects.add(Arc::new(YZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, green)));
+    objects.add(Arc::new(YZRect::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
+    objects.add(Arc::new(XZRect::new(
+        213.0, 343.0, 227.0, 332.0, 554.0, light,
+    )));
+    objects.add(Arc::new(XZRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        white.clone(),
+    )));
+    objects.add(Arc::new(XZRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+    )));
+    objects.add(Arc::new(XYRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white)));
+
+    objects
 }

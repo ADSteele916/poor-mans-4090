@@ -1,4 +1,5 @@
 mod aabb;
+mod aarect;
 mod bvh;
 mod camera;
 mod hittable;
@@ -23,24 +24,30 @@ use image::RgbImage;
 use indicatif::ParallelProgressIterator;
 use nalgebra::{vector, Vector3};
 use rayon::prelude::*;
-use scenes::{earth, two_perlin_spheres, two_spheres};
+use scenes::{cornell_box, earth, simple_light, two_perlin_spheres, two_spheres};
 use std::path::PathBuf;
 
-fn ray_colour(r: &Ray, world: &HittableList, depth: i32) -> Vector3<f64> {
+fn ray_colour(
+    r: &Ray,
+    background: &Vector3<f64>,
+    world: &HittableList,
+    depth: i32,
+) -> Vector3<f64> {
     if depth <= 0 {
         return vector![0.0, 0.0, 0.0];
     }
 
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
+        let emitted = rec.material().emitted(rec.u(), rec.v(), &rec.point());
         if let Some((attenuation, scatttered)) = rec.material().scatter(r, &rec) {
-            return attenuation.component_mul(&ray_colour(&scatttered, world, depth - 1));
+            emitted
+                + attenuation.component_mul(&ray_colour(&scatttered, background, world, depth - 1))
         } else {
-            return vector![0.0, 0.0, 0.0];
+            emitted
         }
+    } else {
+        *background
     }
-    let unit_direction = r.direction.normalize();
-    let t = 0.5 * (unit_direction.y + 1.0);
-    (1.0 - t) * vector![1.0, 1.0, 1.0] + t * vector![0.5, 0.7, 1.0]
 }
 
 fn vector_to_rgb(colour: &Vector3<f64>, samples: u32) -> [u8; 3] {
@@ -66,9 +73,9 @@ fn main() {
 
     // Image
 
-    let aspect_ratio = 16.0 / 9.0;
-    let image_width = 400;
-    let samples_per_pixel = 100;
+    let mut aspect_ratio = 16.0 / 9.0;
+    let mut image_width = 400;
+    let mut samples_per_pixel = 100;
     let max_depth = 100;
 
     // World
@@ -79,10 +86,12 @@ fn main() {
     let lookat;
     let vfov;
     let mut aperture = 0.0;
+    let background;
 
     match args.scene {
         1 => {
             world = random_scene();
+            background = vector![0.70, 0.80, 1.00];
             lookfrom = vector![13.0, 2.0, 3.0];
             lookat = vector![0.0, 0.0, 0.0];
             vfov = 20.0;
@@ -90,21 +99,42 @@ fn main() {
         }
         2 => {
             world = two_spheres();
+            background = vector![0.70, 0.80, 1.00];
             lookfrom = vector![13.0, 2.0, 3.0];
             lookat = vector![0.0, 0.0, 0.0];
             vfov = 20.0;
         }
         3 => {
             world = two_perlin_spheres();
+            background = vector![0.70, 0.80, 1.00];
             lookfrom = vector![13.0, 2.0, 3.0];
             lookat = vector![0.0, 0.0, 0.0];
             vfov = 20.0;
         }
-        _ => {
+        4 => {
             world = earth();
+            background = vector![0.70, 0.80, 1.00];
             lookfrom = vector![13.0, 2.0, 3.0];
             lookat = vector![0.0, 0.0, 0.0];
             vfov = 20.0;
+        }
+        5 => {
+            world = simple_light();
+            samples_per_pixel = 400;
+            background = vector![0.0, 0.0, 0.0];
+            lookfrom = vector![26.0, 3.0, 6.0];
+            lookat = vector![0.0, 2.0, 0.0];
+            vfov = 20.0;
+        }
+        _ => {
+            world = cornell_box();
+            aspect_ratio = 1.0;
+            image_width = 600;
+            samples_per_pixel = 200;
+            background = vector![0.0, 0.0, 0.0];
+            lookfrom = vector![278.0, 278.0, -800.0];
+            lookat = vector![278.0, 278.0, 0.0];
+            vfov = 40.0;
         }
     }
 
@@ -139,7 +169,7 @@ fn main() {
                 let u = ((x as f64) + random_double()) / (image_width - 1) as f64;
                 let v = ((y as f64) - random_double()) / (image_height - 1) as f64;
                 let r = cam.get_ray(u, v);
-                pixel_colour += ray_colour(&r, &world, max_depth);
+                pixel_colour += ray_colour(&r, &background, &world, max_depth);
             }
             vector_to_rgb(&pixel_colour, samples_per_pixel)
         })

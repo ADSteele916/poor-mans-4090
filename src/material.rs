@@ -19,6 +19,10 @@ fn refract(uv: &Vector3<f64>, n: &Vector3<f64>, etai_over_etat: f64) -> Vector3<
 
 pub trait Material: Send + Sync {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Vector3<f64>, Ray)>;
+
+    fn emitted(&self, _u: f64, _v: f64, _p: &Vector3<f64>) -> Vector3<f64> {
+        vector![0.0, 0.0, 0.0]
+    }
 }
 
 pub struct Lambertian {
@@ -117,5 +121,27 @@ impl Material for Dielectric {
 
         let scattered = Ray::new(rec.point(), direction, r_in.time);
         Some((vector![1.0, 1.0, 1.0], scattered))
+    }
+}
+
+pub struct DiffuseLight {
+    emit: Arc<dyn Texture>,
+}
+
+impl DiffuseLight {
+    pub fn new(colour: Vector3<f64>) -> Self {
+        Self {
+            emit: Arc::new(SolidColour::new(colour)),
+        }
+    }
+}
+
+impl Material for DiffuseLight {
+    fn scatter(&self, _r_in: &Ray, _rec: &HitRecord) -> Option<(Vector3<f64>, Ray)> {
+        None
+    }
+
+    fn emitted(&self, u: f64, v: f64, p: &Vector3<f64>) -> Vector3<f64> {
+        self.emit.value(u, v, p)
     }
 }
