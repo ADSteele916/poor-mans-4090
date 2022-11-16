@@ -9,6 +9,12 @@ pub struct HittableList {
 }
 
 impl HittableList {
+    pub fn new(object: Arc<dyn Hittable>) -> Self {
+        Self {
+            objects: vec![object],
+        }
+    }
+
     pub fn objects(&self) -> &Vec<Arc<dyn Hittable>> {
         &self.objects
     }

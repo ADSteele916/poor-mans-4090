@@ -23,7 +23,7 @@ use image::RgbImage;
 use indicatif::ParallelProgressIterator;
 use nalgebra::{vector, Vector3};
 use rayon::prelude::*;
-use scenes::{two_perlin_spheres, two_spheres};
+use scenes::{earth, two_perlin_spheres, two_spheres};
 use std::path::PathBuf;
 
 fn ray_colour(r: &Ray, world: &HittableList, depth: i32) -> Vector3<f64> {
@@ -94,8 +94,14 @@ fn main() {
             lookat = vector![0.0, 0.0, 0.0];
             vfov = 20.0;
         }
-        _ => {
+        3 => {
             world = two_perlin_spheres();
+            lookfrom = vector![13.0, 2.0, 3.0];
+            lookat = vector![0.0, 0.0, 0.0];
+            vfov = 20.0;
+        }
+        _ => {
+            world = earth();
             lookfrom = vector![13.0, 2.0, 3.0];
             lookat = vector![0.0, 0.0, 0.0];
             vfov = 20.0;

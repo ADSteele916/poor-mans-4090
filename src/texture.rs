@@ -1,5 +1,7 @@
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
 
+use image::io::Reader as ImageReader;
+use image::RgbImage;
 use nalgebra::{vector, Vector3};
 
 use crate::perlin::Perlin;
@@ -66,5 +68,37 @@ impl NoiseTexture {
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, p: &Vector3<f64>) -> Vector3<f64> {
         vector![1.0, 1.0, 1.0] * 0.5 * (1.0 + (self.scale * p.z + 10.0 * self.noise.turb(p)).sin())
+    }
+}
+
+pub struct ImageTexture {
+    image: RgbImage,
+}
+
+impl ImageTexture {
+    pub fn new(image_path: PathBuf) -> Self {
+        Self {
+            image: ImageReader::open(image_path)
+                .unwrap()
+                .decode()
+                .unwrap()
+                .into_rgb8(),
+        }
+    }
+}
+
+impl Texture for ImageTexture {
+    fn value(&self, u: f64, v: f64, _p: &Vector3<f64>) -> Vector3<f64> {
+        let u = u.clamp(0.0, 1.0);
+        let v = 1.0 - v.clamp(0.0, 1.0);
+
+        let i = ((u * (self.image.width() as f64)) as u32).min(self.image.width() - 1);
+        let j = ((v * (self.image.height() as f64)) as u32).min(self.image.height() - 1);
+
+        let colour_scale = 1.0 / 255.0;
+
+        let pixel = self.image.get_pixel(i, j).0;
+
+        colour_scale * vector![pixel[0] as f64, pixel[1] as f64, pixel[2] as f64]
     }
 }

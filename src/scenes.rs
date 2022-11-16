@@ -3,8 +3,9 @@ use crate::material::{Dielectric, Lambertian, Metal};
 use crate::moving_sphere::MovingSphere;
 use crate::random::{random_double, random_range_double, random_range_vector3, random_vector3};
 use crate::sphere::Sphere;
-use crate::texture::{CheckerTexture, NoiseTexture};
+use crate::texture::{CheckerTexture, ImageTexture, NoiseTexture};
 use nalgebra::vector;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 pub fn random_scene() -> HittableList {
@@ -114,4 +115,12 @@ pub fn two_perlin_spheres() -> HittableList {
     objects.add(Arc::new(Sphere::new(vector![0.0, 2.0, 0.0], 2.0, permat)));
 
     objects
+}
+
+pub fn earth() -> HittableList {
+    let earth_texture = Arc::new(ImageTexture::new(PathBuf::from("earthmap.jpg")));
+    let earth_surface = Arc::new(Lambertian::new_from_texture(earth_texture));
+    let globe = Arc::new(Sphere::new(vector![0.0, 0.0, 0.0], 2.0, earth_surface));
+
+    HittableList::new(globe)
 }
