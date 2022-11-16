@@ -3,13 +3,18 @@ use crate::material::{Dielectric, Lambertian, Metal};
 use crate::moving_sphere::MovingSphere;
 use crate::random::{random_double, random_range_double, random_range_vector3, random_vector3};
 use crate::sphere::Sphere;
+use crate::texture::CheckerTexture;
 use nalgebra::vector;
 use std::sync::Arc;
 
 pub fn random_scene() -> HittableList {
     let mut world = HittableList::default();
 
-    let material_ground = Arc::new(Lambertian::new(vector![0.5, 0.5, 0.5]));
+    let checker = Arc::new(CheckerTexture::new(
+        vector![0.2, 0.3, 0.1],
+        vector![0.9, 0.9, 0.9],
+    ));
+    let material_ground = Arc::new(Lambertian::new_from_texture(checker));
     world.add(Arc::new(Sphere::new(
         vector![0.0, -1000.0, -1.0],
         1000.0,
@@ -72,4 +77,26 @@ pub fn random_scene() -> HittableList {
     )));
 
     world
+}
+
+pub fn two_spheres() -> HittableList {
+    let mut objects = HittableList::default();
+
+    let checker = Arc::new(CheckerTexture::new(
+        vector![0.2, 0.3, 0.1],
+        vector![0.9, 0.9, 0.9],
+    ));
+
+    objects.add(Arc::new(Sphere::new(
+        vector![0.0, -10.0, 0.0],
+        10.0,
+        Arc::new(Lambertian::new_from_texture(checker.clone())),
+    )));
+    objects.add(Arc::new(Sphere::new(
+        vector![0.0, 10.0, 0.0],
+        10.0,
+        Arc::new(Lambertian::new_from_texture(checker)),
+    )));
+
+    objects
 }

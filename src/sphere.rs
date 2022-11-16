@@ -3,6 +3,7 @@ use crate::hittable::{HitRecord, Hittable};
 use crate::material::Material;
 use crate::ray::Ray;
 use nalgebra::{vector, Vector3};
+use std::f64::consts::PI;
 use std::sync::Arc;
 
 #[derive(Clone)]
@@ -19,6 +20,13 @@ impl Sphere {
             radius,
             material,
         }
+    }
+
+    fn get_sphere_uv(p: &Vector3<f64>) -> (f64, f64) {
+        let theta = (-p.y).acos();
+        let phi = f64::atan2(-p.z, p.x) + PI;
+
+        (phi / (2.0 * PI), theta / PI)
     }
 }
 
@@ -47,7 +55,8 @@ impl Hittable for Sphere {
         let t = root;
         let p = r.at(t);
         let normal = (p - self.center) / self.radius;
-        Some(HitRecord::new(p, normal, self.material.clone(), t, r))
+        let (u, v) = Self::get_sphere_uv(&normal);
+        Some(HitRecord::new(p, normal, self.material.clone(), t, u, v, r))
     }
 
     fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {

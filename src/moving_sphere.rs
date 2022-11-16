@@ -65,7 +65,15 @@ impl Hittable for MovingSphere {
         let t = root;
         let p = r.at(t);
         let normal = (p - self.center(r.time)) / self.radius;
-        Some(HitRecord::new(p, normal, self.material.clone(), t, r))
+        Some(HitRecord::new(
+            p,
+            normal,
+            self.material.clone(),
+            t,
+            0.0,
+            0.0,
+            r,
+        ))
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {

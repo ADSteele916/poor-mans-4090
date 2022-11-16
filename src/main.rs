@@ -9,6 +9,7 @@ mod random;
 mod ray;
 mod scenes;
 mod sphere;
+mod texture;
 
 use crate::camera::Camera;
 use crate::hittable::Hittable;
@@ -21,6 +22,7 @@ use image::RgbImage;
 use indicatif::ParallelProgressIterator;
 use nalgebra::{vector, Vector3};
 use rayon::prelude::*;
+use scenes::two_spheres;
 use std::path::PathBuf;
 
 fn ray_colour(r: &Ray, world: &HittableList, depth: i32) -> Vector3<f64> {
@@ -52,6 +54,8 @@ fn vector_to_rgb(colour: &Vector3<f64>, samples: u32) -> [u8; 3] {
 #[derive(Parser)]
 #[command(version)]
 struct Args {
+    #[arg(default_value_t = 0)]
+    scene: usize,
     #[arg(default_value = "output.png")]
     path: PathBuf,
 }
@@ -68,22 +72,40 @@ fn main() {
 
     // World
 
-    let world = random_scene();
+    let world;
+
+    let lookfrom;
+    let lookat;
+    let vfov;
+    let mut aperture = 0.0;
+
+    match args.scene {
+        1 => {
+            world = random_scene();
+            lookfrom = vector![13.0, 2.0, 3.0];
+            lookat = vector![0.0, 0.0, 0.0];
+            vfov = 20.0;
+            aperture = 0.1;
+        }
+        _ => {
+            world = two_spheres();
+            lookfrom = vector![13.0, 2.0, 3.0];
+            lookat = vector![0.0, 0.0, 0.0];
+            vfov = 20.0;
+        }
+    }
 
     // Camera
 
-    let lookfrom = vector![13.0, 2.0, 3.0];
-    let lookat = vector![0.0, 0.0, 0.0];
     let vup = vector![0.0, 1.0, 0.0];
     let dist_to_focus = 10.0;
-    let aperture = 0.1;
     let image_height = ((image_width as f64) / aspect_ratio) as u32;
 
     let cam = Camera::new(
         lookfrom,
         lookat,
         vup,
-        20.0,
+        vfov,
         aspect_ratio,
         aperture,
         dist_to_focus,

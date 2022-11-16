@@ -10,6 +10,8 @@ pub struct HitRecord {
     normal: Vector3<f64>,
     material: Arc<dyn Material>,
     t: f64,
+    u: f64,
+    v: f64,
     front_face: bool,
 }
 
@@ -19,6 +21,8 @@ impl HitRecord {
         normal: Vector3<f64>,
         material: Arc<dyn Material>,
         t: f64,
+        u: f64,
+        v: f64,
         r: &Ray,
     ) -> Self {
         let front_face = r.direction.dot(&normal) < 0.0;
@@ -27,6 +31,8 @@ impl HitRecord {
             normal: if front_face { normal } else { -normal },
             material,
             t,
+            u,
+            v,
             front_face,
         }
     }
@@ -45,6 +51,14 @@ impl HitRecord {
 
     pub fn t(&self) -> f64 {
         self.t
+    }
+
+    pub fn u(&self) -> f64 {
+        self.u
+    }
+
+    pub fn v(&self) -> f64 {
+        self.v
     }
 
     pub fn front_face(&self) -> bool {

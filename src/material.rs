@@ -1,6 +1,9 @@
+use std::sync::Arc;
+
 use crate::hittable::HitRecord;
 use crate::random::{random_double, random_in_unit_sphere, random_unit_vector};
 use crate::ray::Ray;
+use crate::texture::{SolidColour, Texture};
 use nalgebra::{vector, Vector3};
 
 fn reflect(v: &Vector3<f64>, n: &Vector3<f64>) -> Vector3<f64> {
@@ -19,11 +22,17 @@ pub trait Material: Send + Sync {
 }
 
 pub struct Lambertian {
-    pub albedo: Vector3<f64>,
+    pub albedo: Arc<dyn Texture>,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Vector3<f64>) -> Self {
+    pub fn new(colour: Vector3<f64>) -> Self {
+        Self {
+            albedo: Arc::new(SolidColour::new(colour)),
+        }
+    }
+
+    pub fn new_from_texture(albedo: Arc<dyn Texture>) -> Self {
         Self { albedo }
     }
 }
@@ -37,8 +46,9 @@ impl Material for Lambertian {
             scatter_direction = rec.normal();
         }
 
+        let attenuation = self.albedo.value(rec.u(), rec.v(), &rec.point());
         let scattered = Ray::new(rec.point(), scatter_direction, r_in.time);
-        Some((self.albedo, scattered))
+        Some((attenuation, scattered))
     }
 }
 
