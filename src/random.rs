@@ -43,3 +43,7 @@ pub fn random_in_unit_disk() -> Vector3<f64> {
         }
     }
 }
+
+pub fn random_int(min: i32, max: i32) -> i32 {
+    rand::thread_rng().gen_range(min..=max)
+}

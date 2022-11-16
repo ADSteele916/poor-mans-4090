@@ -1,7 +1,8 @@
+use crate::aabb::Aabb;
 use crate::hittable::{HitRecord, Hittable};
 use crate::material::Material;
 use crate::ray::Ray;
-use nalgebra::Vector3;
+use nalgebra::{vector, Vector3};
 use std::sync::Arc;
 
 #[derive(Clone)]
@@ -47,5 +48,12 @@ impl Hittable for Sphere {
         let p = r.at(t);
         let normal = (p - self.center) / self.radius;
         Some(HitRecord::new(p, normal, self.material.clone(), t, r))
+    }
+
+    fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<Aabb> {
+        Some(Aabb::new(
+            self.center - vector![self.radius, self.radius, self.radius],
+            self.center + vector![self.radius, self.radius, self.radius],
+        ))
     }
 }

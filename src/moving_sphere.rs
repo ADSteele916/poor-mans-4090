@@ -1,7 +1,8 @@
+use crate::aabb::Aabb;
 use crate::hittable::{HitRecord, Hittable};
 use crate::material::Material;
 use crate::ray::Ray;
-use nalgebra::Vector3;
+use nalgebra::{vector, Vector3};
 use std::sync::Arc;
 
 #[derive(Clone)]
@@ -65,5 +66,17 @@ impl Hittable for MovingSphere {
         let p = r.at(t);
         let normal = (p - self.center(r.time)) / self.radius;
         Some(HitRecord::new(p, normal, self.material.clone(), t, r))
+    }
+
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<Aabb> {
+        let box1 = Aabb::new(
+            self.center(time0) - vector![self.radius, self.radius, self.radius],
+            self.center(time0) + vector![self.radius, self.radius, self.radius],
+        );
+        let box2 = Aabb::new(
+            self.center(time1) - vector![self.radius, self.radius, self.radius],
+            self.center(time1) + vector![self.radius, self.radius, self.radius],
+        );
+        Some(Aabb::surrounding_box(&box1, &box2))
     }
 }
