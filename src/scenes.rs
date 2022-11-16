@@ -1,4 +1,6 @@
+use crate::aabox::AaBox;
 use crate::aarect::{XYRect, XZRect, YZRect};
+use crate::hittable::{RotateY, Translate};
 use crate::hittable_list::HittableList;
 use crate::material::{Dielectric, DiffuseLight, Lambertian, Metal};
 use crate::moving_sphere::MovingSphere;
@@ -173,7 +175,32 @@ pub fn cornell_box() -> HittableList {
         555.0,
         white.clone(),
     )));
-    objects.add(Arc::new(XYRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white)));
+    objects.add(Arc::new(XYRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+    )));
+
+    let box1 = Arc::new(AaBox::new(
+        vector![0.0, 0.0, 0.0],
+        vector![165.0, 330.0, 165.0],
+        white.clone(),
+    ));
+    let box1 = Arc::new(RotateY::new(box1, 15.0));
+    let box1 = Arc::new(Translate::new(box1, vector![265.0, 0.0, 295.0]));
+    objects.add(box1);
+
+    let box2 = Arc::new(AaBox::new(
+        vector![0.0, 0.0, 0.0],
+        vector![165.0, 165.0, 165.0],
+        white,
+    ));
+    let box2 = Arc::new(RotateY::new(box2, -18.0));
+    let box2 = Arc::new(Translate::new(box2, vector![130.0, 0.0, 65.0]));
+    objects.add(box2);
 
     objects
 }
