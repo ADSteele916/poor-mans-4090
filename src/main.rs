@@ -3,6 +3,7 @@ mod aabox;
 mod aarect;
 mod bvh;
 mod camera;
+mod constant_medium;
 mod hittable;
 mod hittable_list;
 mod material;
@@ -25,7 +26,7 @@ use image::RgbImage;
 use indicatif::ParallelProgressIterator;
 use nalgebra::{vector, Vector3};
 use rayon::prelude::*;
-use scenes::{cornell_box, earth, simple_light, two_perlin_spheres, two_spheres};
+use scenes::{cornell_box, earth, simple_light, two_perlin_spheres, two_spheres, cornell_smoke};
 use std::path::PathBuf;
 
 fn ray_colour(
@@ -87,7 +88,7 @@ fn main() {
     let lookat;
     let vfov;
     let mut aperture = 0.0;
-    let background;
+    let mut background = vector![0.0, 0.0, 0.0];
 
     match args.scene {
         1 => {
@@ -127,12 +128,21 @@ fn main() {
             lookat = vector![0.0, 2.0, 0.0];
             vfov = 20.0;
         }
-        _ => {
+        6 => {
             world = cornell_box();
             aspect_ratio = 1.0;
             image_width = 600;
             samples_per_pixel = 200;
             background = vector![0.0, 0.0, 0.0];
+            lookfrom = vector![278.0, 278.0, -800.0];
+            lookat = vector![278.0, 278.0, 0.0];
+            vfov = 40.0;
+        }
+        _ => {
+            world = cornell_smoke();
+            aspect_ratio = 1.0;
+            image_width = 600;
+            samples_per_pixel = 200;
             lookfrom = vector![278.0, 278.0, -800.0];
             lookat = vector![278.0, 278.0, 0.0];
             vfov = 40.0;
