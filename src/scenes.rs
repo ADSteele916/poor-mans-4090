@@ -1,5 +1,6 @@
 use crate::aabox::AaBox;
 use crate::aarect::{XYRect, XZRect, YZRect};
+use crate::bvh::BvhNode;
 use crate::constant_medium::ConstantMedium;
 use crate::hittable::{RotateY, Translate};
 use crate::hittable_list::HittableList;
@@ -269,6 +270,120 @@ pub fn cornell_smoke() -> HittableList {
         box2,
         0.01,
         vector![1.0, 1.0, 1.0],
+    )));
+
+    objects
+}
+
+pub fn final_scene() -> HittableList {
+    let mut boxes1 = HittableList::default();
+    let ground = Arc::new(Lambertian::new(vector![0.48, 0.83, 0.54]));
+
+    let boxes_per_side = 20;
+    for i in 0..boxes_per_side {
+        for j in 0..boxes_per_side {
+            let w = 100.0;
+            let x0 = -1000.0 + (i as f64) * w;
+            let z0 = -1000.0 + (j as f64) * w;
+            let y0 = 0.0;
+            let x1 = x0 + w;
+            let y1 = random_range_double(1.0, 101.0);
+            let z1 = z0 + w;
+
+            boxes1.add(Arc::new(AaBox::new(
+                vector![x0, y0, z0],
+                vector![x1, y1, z1],
+                ground.clone(),
+            )))
+        }
+    }
+
+    let mut objects = HittableList::default();
+
+    objects.add(Arc::new(BvhNode::new(&boxes1, 0.0, 1.0)));
+
+    let light = Arc::new(DiffuseLight::new(vector![7.0, 7.0, 7.0]));
+    objects.add(Arc::new(XZRect::new(
+        123.0, 423.0, 147.0, 412.0, 554.0, light,
+    )));
+
+    let center1 = vector![400.0, 400.0, 200.0];
+    let center2 = center1 + vector![30.0, 0.0, 0.0];
+    let moving_sphere_material = Arc::new(Lambertian::new(vector![0.7, 0.3, 0.1]));
+    objects.add(Arc::new(MovingSphere::new(
+        center1,
+        center2,
+        0.0,
+        1.0,
+        50.0,
+        moving_sphere_material,
+    )));
+
+    objects.add(Arc::new(Sphere::new(
+        vector![260.0, 150.0, 45.0],
+        50.0,
+        Arc::new(Dielectric::new(1.5)),
+    )));
+    objects.add(Arc::new(Sphere::new(
+        vector![0.0, 150.0, 145.0],
+        50.0,
+        Arc::new(Metal::new(vector![0.8, 0.8, 0.9], 1.0)),
+    )));
+
+    let boundary = Arc::new(Sphere::new(
+        vector![360.0, 150.0, 145.0],
+        70.0,
+        Arc::new(Dielectric::new(1.5)),
+    ));
+    objects.add(boundary.clone());
+    objects.add(Arc::new(ConstantMedium::new(
+        boundary,
+        0.2,
+        vector![0.2, 0.4, 0.9],
+    )));
+    let boundary = Arc::new(Sphere::new(
+        vector![0.0, 0.0, 0.0],
+        5000.0,
+        Arc::new(Dielectric::new(1.5)),
+    ));
+    objects.add(Arc::new(ConstantMedium::new(
+        boundary,
+        0.0001,
+        vector![1.0, 1.0, 1.0],
+    )));
+
+    let emat = Arc::new(Lambertian::new_from_texture(Arc::new(ImageTexture::new(
+        PathBuf::from("earthmap.jpg"),
+    ))));
+    objects.add(Arc::new(Sphere::new(
+        vector![400.0, 200.0, 400.0],
+        100.0,
+        emat,
+    )));
+    let pertext = Arc::new(NoiseTexture::new(0.1));
+    objects.add(Arc::new(Sphere::new(
+        vector![220.0, 280.0, 300.0],
+        80.0,
+        Arc::new(Lambertian::new_from_texture(pertext)),
+    )));
+
+    let mut boxes2 = HittableList::default();
+    let white = Arc::new(Lambertian::new(vector![0.73, 0.73, 0.73]));
+    let ns = 1000;
+    for _ in 0..ns {
+        boxes2.add(Arc::new(Sphere::new(
+            random_range_vector3(0.0, 165.0),
+            10.0,
+            white.clone(),
+        )));
+    }
+
+    objects.add(Arc::new(Translate::new(
+        Arc::new(RotateY::new(
+            Arc::new(BvhNode::new(&boxes2, 0.0, 1.0)),
+            15.0,
+        )),
+        vector![-100.0, 270.0, 395.0],
     )));
 
     objects

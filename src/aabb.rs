@@ -39,9 +39,9 @@ impl Aabb {
             box0.minimum.z.min(box1.minimum.z)
         ];
         let big = vector![
-            box0.maximum.x.min(box1.maximum.x),
-            box0.maximum.y.min(box1.maximum.y),
-            box0.maximum.z.min(box1.maximum.z)
+            box0.maximum.x.max(box1.maximum.x),
+            box0.maximum.y.max(box1.maximum.y),
+            box0.maximum.z.max(box1.maximum.z)
         ];
         Self::new(small, big)
     }

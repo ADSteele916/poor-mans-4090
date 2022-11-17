@@ -26,7 +26,9 @@ use image::RgbImage;
 use indicatif::ParallelProgressIterator;
 use nalgebra::{vector, Vector3};
 use rayon::prelude::*;
-use scenes::{cornell_box, earth, simple_light, two_perlin_spheres, two_spheres, cornell_smoke};
+use scenes::{
+    cornell_box, cornell_smoke, earth, final_scene, simple_light, two_perlin_spheres, two_spheres,
+};
 use std::path::PathBuf;
 
 fn ray_colour(
@@ -138,12 +140,22 @@ fn main() {
             lookat = vector![278.0, 278.0, 0.0];
             vfov = 40.0;
         }
-        _ => {
+        7 => {
             world = cornell_smoke();
             aspect_ratio = 1.0;
             image_width = 600;
             samples_per_pixel = 200;
             lookfrom = vector![278.0, 278.0, -800.0];
+            lookat = vector![278.0, 278.0, 0.0];
+            vfov = 40.0;
+        }
+        _ => {
+            world = final_scene();
+            aspect_ratio = 1.0;
+            image_width = 800;
+            samples_per_pixel = 10000;
+            background = vector![0.0, 0.0, 0.0];
+            lookfrom = vector![478.0, 278.0, -600.0];
             lookat = vector![278.0, 278.0, 0.0];
             vfov = 40.0;
         }
